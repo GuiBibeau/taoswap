@@ -2,6 +2,8 @@ require("dotenv").config({
   path: ".env.local",
 });
 
+require("@nomicfoundation/hardhat-toolbox");
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
