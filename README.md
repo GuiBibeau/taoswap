@@ -19,5 +19,13 @@ Local DEX setup:
 Repeat this each time you restart your development environment:
 
 1. run `pnpm run node` to start the local network.
+
+we will now use scripts to deploy the contracts, tokens, pools, and add liquidity.
+
 2. In a second terminal run `npx hardhat run --network localhost scripts/01_deployContracts.js` to deploy the contracts
-3. In a third terminal run `pnpm run dev` to start the frontend
+3. Now deploy the tokens with `npx hardhat run --network localhost scripts/02_deployTokens.js`
+4. Now deploy the pools with `npx hardhat run --network localhost scripts/03_deployPools.js`
+5. Now add liquidity to the pools with `npx hardhat run --network localhost scripts/04_addLiquidity.js`
+6. Now check the liquidity with `npx hardhat run --network localhost scripts/05_checkLiquidity.js`
+
+**Note: this will be automated quite soon in a single command**
