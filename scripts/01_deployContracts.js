@@ -1,9 +1,7 @@
 const { ContractFactory, utils } = require("ethers");
 const WETH9 = require("../contracts/WETH9.json");
-
-const fs = require("fs");
-const { promisify } = require("util");
 const { updateEnvFile } = require("./utils/env");
+const { deployContract } = require("./utils/contracts");
 
 const artifacts = {
   UniswapV3Factory: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json"),
@@ -15,103 +13,76 @@ const artifacts = {
 };
 
 const linkLibraries = ({ bytecode, linkReferences }, libraries) => {
-  Object.keys(linkReferences).forEach((fileName) => {
-    Object.keys(linkReferences[fileName]).forEach((contractName) => {
-      if (!libraries.hasOwnProperty(contractName)) {
-        throw new Error(`Missing link library name ${contractName}`);
-      }
-      const address = utils
-        .getAddress(libraries[contractName])
-        .toLowerCase()
-        .slice(2);
-      linkReferences[fileName][contractName].forEach(({ start, length }) => {
-        const start2 = 2 + start * 2;
-        const length2 = length * 2;
-        bytecode = bytecode
-          .slice(0, start2)
-          .concat(address)
-          .concat(bytecode.slice(start2 + length2, bytecode.length));
-      });
-    });
-  });
-  return bytecode;
+  return Object.keys(linkReferences).reduce((acc, fileName) => {
+    return Object.keys(linkReferences[fileName]).reduce(
+      (innerAcc, contractName) => {
+        if (!libraries.hasOwnProperty(contractName)) {
+          throw new Error(`Missing link library name ${contractName}`);
+        }
+
+        const address = utils
+          .getAddress(libraries[contractName])
+          .toLowerCase()
+          .slice(2);
+
+        return linkReferences[fileName][contractName].reduce(
+          (finalAcc, { start, length }) => {
+            const start2 = 2 + start * 2;
+            const length2 = length * 2;
+            return finalAcc
+              .slice(0, start2)
+              .concat(address)
+              .concat(finalAcc.slice(start2 + length2, finalAcc.length));
+          },
+          innerAcc
+        );
+      },
+      acc
+    );
+  }, bytecode);
 };
 
 async function main() {
   const [owner] = await ethers.getSigners();
 
-  Weth = new ContractFactory(
-    artifacts.WETH9.abi,
-    artifacts.WETH9.bytecode,
-    owner
+  const weth = await deployContract(artifacts.WETH9, owner);
+  const factory = await deployContract(artifacts.UniswapV3Factory, owner);
+  const swapRouter = await deployContract(
+    artifacts.SwapRouter,
+    owner,
+    factory.address,
+    weth.address
   );
-  weth = await Weth.deploy();
-
-  Factory = new ContractFactory(
-    artifacts.UniswapV3Factory.abi,
-    artifacts.UniswapV3Factory.bytecode,
-    owner
-  );
-  factory = await Factory.deploy();
-
-  SwapRouter = new ContractFactory(
-    artifacts.SwapRouter.abi,
-    artifacts.SwapRouter.bytecode,
-    owner
-  );
-  swapRouter = await SwapRouter.deploy(factory.address, weth.address);
-
-  NFTDescriptor = new ContractFactory(
-    artifacts.NFTDescriptor.abi,
-    artifacts.NFTDescriptor.bytecode,
-    owner
-  );
-  nftDescriptor = await NFTDescriptor.deploy();
+  const nftDescriptor = await deployContract(artifacts.NFTDescriptor, owner);
 
   const linkedBytecode = linkLibraries(
     {
       bytecode: artifacts.NonfungibleTokenPositionDescriptor.bytecode,
       linkReferences: {
         "NFTDescriptor.sol": {
-          NFTDescriptor: [
-            {
-              length: 20,
-              start: 1681,
-            },
-          ],
+          NFTDescriptor: [{ length: 20, start: 1681 }],
         },
       },
     },
-    {
-      NFTDescriptor: nftDescriptor.address,
-    }
-  );
-
-  NonfungibleTokenPositionDescriptor = new ContractFactory(
-    artifacts.NonfungibleTokenPositionDescriptor.abi,
-    linkedBytecode,
-    owner
+    { NFTDescriptor: nftDescriptor.address }
   );
 
   const nativeCurrencyLabelBytes = utils.formatBytes32String("WETH");
-  nonfungibleTokenPositionDescriptor =
-    await NonfungibleTokenPositionDescriptor.deploy(
-      weth.address,
-      nativeCurrencyLabelBytes
-    );
-
-  NonfungiblePositionManager = new ContractFactory(
-    artifacts.NonfungiblePositionManager.abi,
-    artifacts.NonfungiblePositionManager.bytecode,
+  const nonfungibleTokenPositionDescriptor = await new ContractFactory(
+    artifacts.NonfungibleTokenPositionDescriptor.abi,
+    linkedBytecode,
     owner
-  );
-  nonfungiblePositionManager = await NonfungiblePositionManager.deploy(
+  ).deploy(weth.address, nativeCurrencyLabelBytes);
+
+  const nonfungiblePositionManager = await deployContract(
+    artifacts.NonfungiblePositionManager,
+    owner,
     factory.address,
     weth.address,
     nonfungibleTokenPositionDescriptor.address
   );
 
-  let addresses = {
+  const addresses = {
     WETH_ADDRESS: weth.address,
     FACTORY_ADDRESS: factory.address,
     SWAP_ROUTER_ADDRESS: swapRouter.address,

@@ -1,35 +1,37 @@
-const fs = require("fs");
-const { promisify } = require("util");
 const { updateEnvFile } = require("./utils/env");
+
+const deployToken = async (contractName, owner) => {
+  const Factory = await ethers.getContractFactory(contractName, owner);
+  return Factory.deploy();
+};
+
+const mintTokens = async (token, owner, recipient, amount) => {
+  await token.connect(owner).mint(recipient, ethers.utils.parseEther(amount));
+};
+
+const deployAndMintTokens = async (owner, recipient) => {
+  const tokens = {
+    Tether: await deployToken("Tether", owner),
+    UsdCoin: await deployToken("UsdCoin", owner),
+    WrappedBitcoin: await deployToken("WrappedBitcoin", owner),
+  };
+
+  const mintPromises = Object.values(tokens).map((token) =>
+    mintTokens(token, owner, recipient, "100000")
+  );
+
+  await Promise.all(mintPromises);
+
+  return {
+    USDC_ADDRESS: tokens.UsdCoin.address,
+    TETHER_ADDRESS: tokens.Tether.address,
+    WRAPPED_BITCOIN_ADDRESS: tokens.WrappedBitcoin.address,
+  };
+};
 
 async function main() {
   const [owner, signer2] = await ethers.getSigners();
-
-  Tether = await ethers.getContractFactory("Tether", owner);
-  tether = await Tether.deploy();
-
-  Usdc = await ethers.getContractFactory("UsdCoin", owner);
-  usdc = await Usdc.deploy();
-
-  WrappedBitcoin = await ethers.getContractFactory("WrappedBitcoin", owner);
-  wrappedBitcoin = await WrappedBitcoin.deploy();
-
-  await tether
-    .connect(owner)
-    .mint(signer2.address, ethers.utils.parseEther("100000"));
-  await usdc
-    .connect(owner)
-    .mint(signer2.address, ethers.utils.parseEther("100000"));
-  await wrappedBitcoin
-    .connect(owner)
-    .mint(signer2.address, ethers.utils.parseEther("100000"));
-
-  let addresses = {
-    USDC_ADDRESS: usdc.address,
-    TETHER_ADDRESS: tether.address,
-    WRAPPED_BITCOIN_ADDRESS: wrappedBitcoin.address,
-  };
-
+  const addresses = await deployAndMintTokens(owner, signer2.address);
   return updateEnvFile(addresses);
 }
 

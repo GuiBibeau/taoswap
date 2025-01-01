@@ -2,15 +2,18 @@ require("dotenv").config({
   path: ".env.local",
 });
 
-TETHER_ADDRESS = process.env.TETHER_ADDRESS;
-USDC_ADDRESS = process.env.USDC_ADDRESS;
-WRAPPED_BITCOIN_ADDRESS = process.env.WRAPPED_BITCOIN_ADDRESS;
-WETH_ADDRESS = process.env.WETH_ADDRESS;
-FACTORY_ADDRESS = process.env.FACTORY_ADDRESS;
-SWAP_ROUTER_ADDRESS = process.env.SWAP_ROUTER_ADDRESS;
-NFT_DESCRIPTOR_ADDRESS = process.env.NFT_DESCRIPTOR_ADDRESS;
-POSITION_DESCRIPTOR_ADDRESS = process.env.POSITION_DESCRIPTOR_ADDRESS;
-POSITION_MANAGER_ADDRESS = process.env.POSITION_MANAGER_ADDRESS;
+// Convert environment variables to constants
+const ADDRESSES = {
+  TETHER: process.env.TETHER_ADDRESS,
+  USDC: process.env.USDC_ADDRESS,
+  WRAPPED_BITCOIN: process.env.WRAPPED_BITCOIN_ADDRESS,
+  WETH: process.env.WETH_ADDRESS,
+  FACTORY: process.env.FACTORY_ADDRESS,
+  SWAP_ROUTER: process.env.SWAP_ROUTER_ADDRESS,
+  NFT_DESCRIPTOR: process.env.NFT_DESCRIPTOR_ADDRESS,
+  POSITION_DESCRIPTOR: process.env.POSITION_DESCRIPTOR_ADDRESS,
+  POSITION_MANAGER: process.env.POSITION_MANAGER_ADDRESS,
+};
 
 const artifacts = {
   UniswapV3Factory: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json"),
@@ -19,62 +22,53 @@ const artifacts = {
 
 const { Contract, BigNumber } = require("ethers");
 const bn = require("bignumber.js");
-const { promisify } = require("util");
-const fs = require("fs");
 const { updateEnvFile } = require("./utils/env");
+const { createContract, encodePriceSqrt } = require("./utils/contracts");
 bn.config({ EXPONENTIAL_AT: 999999, DECIMAL_PLACES: 40 });
 
-const provider = ethers.provider;
+// Create contract instances
+const createContracts = (provider) => ({
+  nonfungiblePositionManager: createContract(
+    ADDRESSES.POSITION_MANAGER,
+    artifacts.NonfungiblePositionManager.abi,
+    provider
+  ),
+  factory: createContract(
+    ADDRESSES.FACTORY,
+    artifacts.UniswapV3Factory.abi,
+    provider
+  ),
+});
 
-function encodePriceSqrt(reserve1, reserve0) {
-  return BigNumber.from(
-    new bn(reserve1.toString())
-      .div(reserve0.toString())
-      .sqrt()
-      .multipliedBy(new bn(2).pow(96))
-      .integerValue(3)
-      .toString()
-  );
-}
-
-const nonfungiblePositionManager = new Contract(
-  POSITION_MANAGER_ADDRESS,
-  artifacts.NonfungiblePositionManager.abi,
-  provider
-);
-
-const factory = new Contract(
-  FACTORY_ADDRESS,
-  artifacts.UniswapV3Factory.abi,
-  provider
-);
-
-async function deployPool(token0, token1, fee, price) {
+// Pure function for pool deployment
+const deployPool = async (contracts, token0, token1, fee, price) => {
   const [owner] = await ethers.getSigners();
 
-  await nonfungiblePositionManager
+  await contracts.nonfungiblePositionManager
     .connect(owner)
     .createAndInitializePoolIfNecessary(token0, token1, fee, price, {
       gasLimit: 5000000,
     });
-  const poolAddress = await factory.connect(owner).getPool(token0, token1, fee);
-  return poolAddress;
-}
 
-async function main() {
-  const usdtUsdc500 = await deployPool(
-    TETHER_ADDRESS,
-    USDC_ADDRESS,
-    500,
-    encodePriceSqrt(1, 1)
-  );
+  return contracts.factory.connect(owner).getPool(token0, token1, fee);
+};
 
-  let addresses = {
-    USDT_USDC_500: usdtUsdc500,
+// Main execution function
+const main = async () => {
+  const contracts = createContracts(ethers.provider);
+
+  const poolAddresses = {
+    USDT_USDC_500: await deployPool(
+      contracts,
+      ADDRESSES.TETHER,
+      ADDRESSES.USDC,
+      500,
+      encodePriceSqrt(1, 1)
+    ),
   };
 
-  return updateEnvFile(addresses);
-}
+  return updateEnvFile(poolAddresses);
+};
 
 /*
   npx hardhat run --network localhost scripts/03_deployPools.js
