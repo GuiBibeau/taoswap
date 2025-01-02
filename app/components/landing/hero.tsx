@@ -10,6 +10,7 @@ import { TopLines } from "./top-lines";
 import { BottomLines } from "./bottom-lines";
 import { SideLines } from "./side-lines";
 import { subscribeToWaitlist } from "@/app/actions/subscribe-to-waitlist";
+import { SubmitButton } from "./submit-button";
 
 export function Hero() {
   return (
@@ -51,13 +52,7 @@ export function Hero() {
                     required
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="mt-4 w-full gap-1 rounded-full border border-[#404040] bg-gradient-to-b from-[#5B5B5D] to-[#262627] px-4 py-2 text-center text-sm text-white"
-                >
-                  Sign Up for Updates{" "}
-                  <IconArrowRight className="inline-block h-4 w-4" />
-                </button>
+                <SubmitButton />
               </Form>
             </div>
           </div>
