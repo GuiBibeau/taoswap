@@ -13,12 +13,15 @@
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "@rainbow-me/rainbowkit": "^2.2.1",
+    "@tabler/icons-react": "^3.26.0",
     "@tanstack/react-query": "^5.62.11",
     "clsx": "^2.1.1",
     "framer-motion": "^11.15.0",
+    "ioredis": "^5.4.2",
     "next": "15.1.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "resend": "^4.0.1",
     "viem": "2.x",
     "wagmi": "^2.14.6"
   },
