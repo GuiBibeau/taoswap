@@ -3,14 +3,27 @@
 import "@rainbow-me/rainbowkit/styles.css";
 
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { type Chain } from "viem";
 import { WagmiProvider } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+
+export const bittensorTestnet = {
+  id: 945,
+  name: "Test Subtensor EVM",
+  nativeCurrency: {
+    name: "Tao",
+    symbol: "TAO",
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ["https://test.chain.opentensor.ai"] },
+  },
+} as const satisfies Chain;
 
 const config = getDefaultConfig({
   appName: "TaoSwap",
   projectId: "YOUR_PROJECT_ID",
-  chains: [mainnet, sepolia],
+  chains: [bittensorTestnet],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
