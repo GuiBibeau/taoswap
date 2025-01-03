@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { enableTestnet } from "./lib/flags";
+import { enableTestnet } from "./app/lib/flags";
 
 export async function middleware(request: NextRequest) {
   // Check if the path matches any of the protected routes
