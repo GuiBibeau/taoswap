@@ -14,9 +14,9 @@ import { SubmitButton } from "./submit-button";
 
 export function Hero() {
   return (
-    <div className="relative h-full min-h-[40rem] w-full bg-white dark:bg-black">
-      <div className="relative z-20 mx-auto max-w-7xl px-4 py-8 md:px-8 lg:px-4">
-        <div className="b relative overflow-hidden rounded-3xl bg-gray-50 dark:bg-black md:py-40">
+    <div className="relative flex items-center w-full bg-white dark:bg-transparent">
+      <div className="relative z-20 mx-auto px-4 py-8 md:px-8 lg:px-4 w-full">
+        <div className="b relative overflow-hidden rounded-3xl bg-gray-50 dark:bg-black md:py-40 border">
           <TopLines />
           <BottomLines />
           <SideLines />
