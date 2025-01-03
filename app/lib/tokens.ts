@@ -8,10 +8,10 @@ export interface TokenInfo {
   logoURI?: string;
 }
 
-export interface TokenList extends Record<number, Record<string, TokenInfo>> {}
+export type TokenList = Record<number, Record<string, TokenInfo>>;
 
 // Bittensor Mainnet tokens (Chain ID: TBD)
-const MAINNET_TOKENS: Record<string, TokenInfo> = {
+export const MAINNET_TOKENS: Record<string, TokenInfo> = {
   //   WETH: {
   //     name: "Wrapped TAO",
   //     symbol: "WTAO",
