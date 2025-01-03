@@ -148,7 +148,10 @@ const main = async () => {
 
   const tx = await nonfungiblePositionManager
     .connect(signer2)
-    .mint(mintParams, { gasLimit: "1000000" });
+    .mint(mintParams, {
+      gasLimit: "1000000",
+      gasPrice: (await provider.getGasPrice()).mul(2),
+    });
   await tx.wait();
 };
 

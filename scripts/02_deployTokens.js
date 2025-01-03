@@ -16,11 +16,9 @@ const deployAndMintTokens = async (owner, recipient) => {
     WrappedBitcoin: await deployToken("WrappedBitcoin", owner),
   };
 
-  const mintPromises = Object.values(tokens).map((token) =>
-    mintTokens(token, owner, recipient, "100000")
-  );
-
-  await Promise.all(mintPromises);
+  for (const token of Object.values(tokens)) {
+    await mintTokens(token, owner, recipient, "100000");
+  }
 
   return {
     USDC_ADDRESS: tokens.UsdCoin.address,

@@ -33,5 +33,15 @@ module.exports = {
       url: "http://127.0.0.1:8545",
       accounts: [process.env.OWNER_PRIVATE_KEY, process.env.USER_PRIVATE_KEY],
     },
+    bittensorTestnet: {
+      url: "https://test.finney.opentensor.ai/",
+      chainId: 945,
+      accounts: [process.env.OWNER_PRIVATE_KEY, process.env.USER_PRIVATE_KEY],
+    },
+    bittensorMainnet: {
+      url: "https://entrypoint-finney.opentensor.ai",
+      chainId: 964,
+      accounts: [process.env.OWNER_PRIVATE_KEY, process.env.USER_PRIVATE_KEY],
+    },
   },
 };

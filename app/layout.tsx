@@ -15,7 +15,6 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  // ... existing metadata
   openGraph: {
     images: [
       {
