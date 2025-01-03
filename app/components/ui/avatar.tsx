@@ -3,6 +3,7 @@ import clsx from "clsx";
 import React, { forwardRef } from "react";
 import { TouchTarget } from "./button";
 import { Link } from "./link";
+import Image from "next/image";
 
 type AvatarProps = {
   src?: string | null;
@@ -10,6 +11,8 @@ type AvatarProps = {
   initials?: string;
   alt?: string;
   className?: string;
+  width?: number;
+  height?: number;
 };
 
 export function Avatar({
@@ -18,6 +21,8 @@ export function Avatar({
   initials,
   alt = "",
   className,
+  width = 40,
+  height = 40,
   ...props
 }: AvatarProps & React.ComponentPropsWithoutRef<"span">) {
   return (
@@ -54,7 +59,18 @@ export function Avatar({
           </text>
         </svg>
       )}
-      {src && <img className="size-full" src={src} alt={alt} />}
+      {src && (
+        <Image
+          className="size-full"
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          style={{
+            objectFit: "cover",
+          }}
+        />
+      )}
     </span>
   );
 }

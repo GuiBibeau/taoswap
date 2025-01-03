@@ -15,6 +15,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : `http://localhost:${process.env.PORT || 3000}`
+  ),
+  title: {
+    template: "%s | TaoSwap",
+    default: "TaoSwap - Bittensor's DeFi Hub",
+  },
+  description:
+    "The first DEX built on Bittensor, enabling secure TAO trading and DeFi opportunities.",
   openGraph: {
     images: [
       {
