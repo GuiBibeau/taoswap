@@ -68,3 +68,7 @@ export function getToken(
 ): TokenInfo | undefined {
   return TOKENS[chainId]?.[symbol];
 }
+
+export const getTokenList = (chainId: number) => {
+  return TOKENS[chainId];
+};
