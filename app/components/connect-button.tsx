@@ -4,7 +4,11 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 
-export const ConnectWalletButton = () => {
+export const ConnectWalletButton = ({
+  children,
+}: {
+  children?: React.ReactNode;
+}) => {
   return (
     <ConnectButton.Custom>
       {({
@@ -39,13 +43,25 @@ export const ConnectWalletButton = () => {
             {(() => {
               if (!connected) {
                 return (
-                  <button
-                    onClick={openConnectModal}
-                    className="flex items-center gap-1 rounded-full border border-[#404040] bg-gradient-to-b from-[#5B5B5D] to-[#262627] px-4 md:px-10 py-2 text-center text-white hover:opacity-80 duration-150"
-                    type="button"
-                  >
-                    Connect Wallet
-                  </button>
+                  <>
+                    {children ? (
+                      <button
+                        onClick={openConnectModal}
+                        className="rounded-2xl w-full bg-blue-500 py-5 font-semibold text-blue-100 mt-1 hover:bg-blue-400 ease-in-out duration-200"
+                        type="button"
+                      >
+                        {children}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={openConnectModal}
+                        className="flex items-center gap-1 rounded-full border border-[#404040] bg-gradient-to-b from-[#5B5B5D] to-[#262627] px-4 md:px-10 py-2 text-center text-white hover:opacity-80 duration-150"
+                        type="button"
+                      >
+                        Connect Wallet
+                      </button>
+                    )}
+                  </>
                 );
               }
 
