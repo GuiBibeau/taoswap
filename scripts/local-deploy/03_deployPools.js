@@ -4,10 +4,8 @@ require("dotenv").config({
 
 // Convert environment variables to constants
 const ADDRESSES = {
-  TETHER: process.env.TETHER_ADDRESS,
   USDC: process.env.USDC_ADDRESS,
-  WRAPPED_BITCOIN: process.env.WRAPPED_BITCOIN_ADDRESS,
-  WETH: process.env.WETH_ADDRESS,
+  WTAO: process.env.WTAO_ADDRESS,
   FACTORY: process.env.FACTORY_ADDRESS,
   SWAP_ROUTER: process.env.SWAP_ROUTER_ADDRESS,
   NFT_DESCRIPTOR: process.env.NFT_DESCRIPTOR_ADDRESS,
@@ -20,50 +18,75 @@ const artifacts = {
   NonfungiblePositionManager: require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json"),
 };
 
-const { Contract, BigNumber } = require("ethers");
 const bn = require("bignumber.js");
-const { updateEnvFile } = require("./utils/env");
-const { createContract, encodePriceSqrt } = require("./utils/contracts");
+const { updateEnvFile } = require("../utils/env");
+const { createContract, encodePriceSqrt } = require("../utils/contracts");
 bn.config({ EXPONENTIAL_AT: 999999, DECIMAL_PLACES: 40 });
 
 // Create contract instances
-const createContracts = (provider) => ({
+const createContracts = (signer) => ({
   nonfungiblePositionManager: createContract(
     ADDRESSES.POSITION_MANAGER,
     artifacts.NonfungiblePositionManager.abi,
-    provider
+    signer
   ),
   factory: createContract(
     ADDRESSES.FACTORY,
     artifacts.UniswapV3Factory.abi,
-    provider
+    signer
   ),
 });
 
+// Add this helper function
+const sortTokens = (tokenA, tokenB) => {
+  return tokenA.toLowerCase() < tokenB.toLowerCase()
+    ? [tokenA, tokenB]
+    : [tokenB, tokenA];
+};
+
 // Pure function for pool deployment
-const deployPool = async (contracts, token0, token1, fee, price) => {
-  const [owner] = await ethers.getSigners();
+const deployPool = async (contracts, tokenA, tokenB, fee, price) => {
+  // Sort tokens by address
+  const [token0, token1] = sortTokens(tokenA, tokenB);
 
-  await contracts.nonfungiblePositionManager
-    .connect(owner)
-    .createAndInitializePoolIfNecessary(token0, token1, fee, price, {
+  // Create and initialize the pool
+  await contracts.nonfungiblePositionManager.createAndInitializePoolIfNecessary(
+    token0,
+    token1,
+    fee,
+    price,
+    {
       gasLimit: 5000000,
-    });
+    }
+  );
 
-  return contracts.factory.connect(owner).getPool(token0, token1, fee);
+  // Get the pool address
+  const poolAddress = await contracts.factory.getPool(token0, token1, fee);
+
+  return poolAddress;
 };
 
 // Main execution function
 const main = async () => {
-  const contracts = createContracts(ethers.provider);
+  const [signer] = await ethers.getSigners();
+  const contracts = createContracts(signer);
+
+  // Sort tokens to determine correct price orientation
+  const [token0, token1] = sortTokens(ADDRESSES.WTAO, ADDRESSES.USDC);
+  const isWTAOToken0 = token0.toLowerCase() === ADDRESSES.WTAO.toLowerCase();
+
+  // Adjust price based on token ordering
+  const sqrtPrice = isWTAOToken0
+    ? encodePriceSqrt(500, 1) // If WTAO is token0
+    : encodePriceSqrt(1, 500); // If WTAO is token1
 
   const poolAddresses = {
-    USDT_USDC_500: await deployPool(
+    WTAO_USDC_3000: await deployPool(
       contracts,
-      ADDRESSES.TETHER,
+      ADDRESSES.WTAO,
       ADDRESSES.USDC,
-      500,
-      encodePriceSqrt(1, 1)
+      3000,
+      sqrtPrice
     ),
   };
 

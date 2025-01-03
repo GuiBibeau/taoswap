@@ -1,7 +1,7 @@
 const { ContractFactory, utils } = require("ethers");
-const WETH9 = require("../contracts/WETH9.json");
-const { updateEnvFile } = require("./utils/env");
-const { deployContract } = require("./utils/contracts");
+const { updateEnvFile } = require("../utils/env");
+const { deployContract } = require("../utils/contracts");
+const WTAO = require("../../artifacts/contracts/WTAO.sol/WTAO.json");
 
 const artifacts = {
   UniswapV3Factory: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json"),
@@ -9,7 +9,6 @@ const artifacts = {
   NFTDescriptor: require("@uniswap/v3-periphery/artifacts/contracts/libraries/NFTDescriptor.sol/NFTDescriptor.json"),
   NonfungibleTokenPositionDescriptor: require("@uniswap/v3-periphery/artifacts/contracts/NonfungibleTokenPositionDescriptor.sol/NonfungibleTokenPositionDescriptor.json"),
   NonfungiblePositionManager: require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json"),
-  WETH9,
 };
 
 const linkLibraries = ({ bytecode, linkReferences }, libraries) => {
@@ -45,14 +44,18 @@ const linkLibraries = ({ bytecode, linkReferences }, libraries) => {
 async function main() {
   const [owner] = await ethers.getSigners();
 
-  const weth = await deployContract(artifacts.WETH9, owner);
+  const wtao = await deployContract(WTAO, owner);
+  const wtaoAddress = wtao.address;
+
   const factory = await deployContract(artifacts.UniswapV3Factory, owner);
+
   const swapRouter = await deployContract(
     artifacts.SwapRouter,
     owner,
     factory.address,
-    weth.address
+    wtaoAddress
   );
+
   const nftDescriptor = await deployContract(artifacts.NFTDescriptor, owner);
 
   const linkedBytecode = linkLibraries(
@@ -72,18 +75,18 @@ async function main() {
     artifacts.NonfungibleTokenPositionDescriptor.abi,
     linkedBytecode,
     owner
-  ).deploy(weth.address, nativeCurrencyLabelBytes);
+  ).deploy(wtaoAddress, nativeCurrencyLabelBytes);
 
   const nonfungiblePositionManager = await deployContract(
     artifacts.NonfungiblePositionManager,
     owner,
     factory.address,
-    weth.address,
+    wtaoAddress,
     nonfungibleTokenPositionDescriptor.address
   );
 
   const addresses = {
-    WETH_ADDRESS: weth.address,
+    WTAO_ADDRESS: wtaoAddress,
     FACTORY_ADDRESS: factory.address,
     SWAP_ROUTER_ADDRESS: swapRouter.address,
     NFT_DESCRIPTOR_ADDRESS: nftDescriptor.address,

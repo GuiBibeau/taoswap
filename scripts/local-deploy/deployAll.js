@@ -19,11 +19,11 @@ const runScript = (scriptPath) => {
 
 const main = async () => {
   const deploymentSteps = [
-    "scripts/01_deployContracts.js",
-    "scripts/02_deployTokens.js",
-    "scripts/03_deployPools.js",
-    "scripts/04_addLiquidity.js",
-    "scripts/05_checkLiquidity.js",
+    "scripts/local-deploy/01_deployContracts.js",
+    "scripts/local-deploy/02_deployTokens.js",
+    "scripts/local-deploy/03_deployPools.js",
+    "scripts/local-deploy/04_addLiquidity.js",
+    "scripts/local-deploy/05_checkLiquidity.js",
   ];
 
   console.log("🎬 Starting deployment sequence...\n");

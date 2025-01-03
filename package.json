@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "node": "hardhat node",
-    "deploy-dex-local": "node scripts/deployAll.js"
+    "deploy-dex-local": "node scripts/local-deploy/deployAll.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

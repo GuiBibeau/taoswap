@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.28;
 
+/**
+ * @dev WARNING: This is a development/testing contract only.
+ * This contract is not intended for production use and serves purely for development purposes.
+ * Do not deploy this contract to mainnet or use it in production environments.
+ */
+
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 

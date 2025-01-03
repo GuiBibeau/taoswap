@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/guibibeau/github/taoswap/contracts/Lock.sol": {
-      "lastModificationDate": 1735678100405,
-      "contentHash": "7eee587c347fe6b1de50c96688cb9477",
+      "lastModificationDate": 1735929232951,
+      "contentHash": "5f99b8947ef579583250955633e3a2aa",
       "sourceName": "contracts/Lock.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -41,8 +41,8 @@
       ]
     },
     "/Users/guibibeau/github/taoswap/contracts/Tether.sol": {
-      "lastModificationDate": 1735678100406,
-      "contentHash": "3d8a6d3be96eec2a9fde5849af37abee",
+      "lastModificationDate": 1735929239625,
+      "contentHash": "c633a591591bbe4e2e2d2831c8721e1a",
       "sourceName": "contracts/Tether.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -286,8 +286,8 @@
       ]
     },
     "/Users/guibibeau/github/taoswap/contracts/WrappedBitcoin.sol": {
-      "lastModificationDate": 1735678100407,
-      "contentHash": "ae215500eb5179ea4a3a81e2f4ed485d",
+      "lastModificationDate": 1735929245961,
+      "contentHash": "ace6cc0529510051cf64fa4b2f29aade",
       "sourceName": "contracts/WrappedBitcoin.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -328,8 +328,8 @@
       ]
     },
     "/Users/guibibeau/github/taoswap/contracts/Usdcoin.sol": {
-      "lastModificationDate": 1735678100406,
-      "contentHash": "2c1b4ba355d5be0decbb36086548f7a5",
+      "lastModificationDate": 1735929242885,
+      "contentHash": "575b4be2470ce21f2cf66ac3bd2f4b8b",
       "sourceName": "contracts/Usdcoin.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -367,6 +367,86 @@
       ],
       "artifacts": [
         "UsdCoin"
+      ]
+    },
+    "/Users/guibibeau/github/taoswap/contracts/WTAO.sol": {
+      "lastModificationDate": 1735936653718,
+      "contentHash": "530687a2202ab5fc1d0fd99536c50c4e",
+      "sourceName": "contracts/WTAO.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 5000,
+            "details": {
+              "yul": false
+            }
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./interfaces/IWTAO.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "WTAO"
+      ]
+    },
+    "/Users/guibibeau/github/taoswap/contracts/interfaces/IWTAO.sol": {
+      "lastModificationDate": 1735936560456,
+      "contentHash": "87cdaf6bd124fc2e03e33563a664822b",
+      "sourceName": "contracts/interfaces/IWTAO.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 5000,
+            "details": {
+              "yul": false
+            }
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "IWTAO"
       ]
     }
   }
