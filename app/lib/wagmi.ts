@@ -1,14 +1,12 @@
-import { cookieStorage, createStorage, injected } from "@wagmi/core";
-import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
-import { Chain } from "@reown/appkit/networks";
-import { walletConnect } from "wagmi/connectors";
-import { metaMask } from "wagmi/connectors";
+import { http, createConfig, createStorage, cookieStorage } from "wagmi";
+import { walletConnect, metaMask } from "wagmi/connectors";
 
 export const projectId = "44a3ab7bcd31b7ffa35330deed568d13";
 
 export const bittensorTestnet = {
   id: 945,
   name: "Test Subtensor EVM",
+  network: "bittensorTestnet",
   nativeCurrency: {
     name: "Tao",
     symbol: "TAO",
@@ -16,23 +14,22 @@ export const bittensorTestnet = {
   },
   rpcUrls: {
     default: { http: ["https://test.chain.opentensor.ai"] },
+    public: { http: ["https://test.chain.opentensor.ai"] },
   },
-} as const satisfies Chain;
+} as const;
 
 if (!projectId) {
   throw new Error("Project ID is not defined");
 }
 
-export const networks = [bittensorTestnet];
-
-export const wagmiAdapter = new WagmiAdapter({
+export const config = createConfig({
+  chains: [bittensorTestnet],
   storage: createStorage({
     storage: cookieStorage,
   }),
-  connectors: [injected(), walletConnect({ projectId }), metaMask()],
+  transports: {
+    [bittensorTestnet.id]: http(),
+  },
+  connectors: [walletConnect({ projectId }), metaMask()],
   ssr: true,
-  projectId,
-  networks,
 });
-
-export const config = wagmiAdapter.wagmiConfig;
