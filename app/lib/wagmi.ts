@@ -1,5 +1,5 @@
 import { http, createConfig, createStorage, cookieStorage } from "wagmi";
-import { walletConnect, metaMask } from "wagmi/connectors";
+import { walletConnect, injected } from "wagmi/connectors";
 
 export const projectId = "44a3ab7bcd31b7ffa35330deed568d13";
 
@@ -30,6 +30,6 @@ export const config = createConfig({
   transports: {
     [bittensorTestnet.id]: http(),
   },
-  connectors: [walletConnect({ projectId }), metaMask()],
+  connectors: [walletConnect({ projectId }), injected()],
   ssr: true,
 });
