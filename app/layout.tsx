@@ -49,8 +49,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookies = (await headers()).get("cookie");
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -61,7 +59,7 @@ export default async function RootLayout({
       >
         <ThemeProvider>
           <Analytics />
-          <ContextProvider cookies={cookies}>{children}</ContextProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>
