@@ -31,6 +31,9 @@ export function Hero() {
               <span>Star on Github!</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
+            <h1 className="bg-gradient-to-b from-black to-neutral-600 bg-clip-text py-4 text-center text-2xl text-transparent dark:from-white dark:to-[#999] md:text-4xl lg:text-7xl">
+              τaoSwap: <br /> Bittensor&apos;s DeFi Hub
+            </h1>
             <p className="mx-auto max-w-2xl py-4 text-center text-base text-neutral-600 dark:text-neutral-300 md:text-lg">
               The first DEX built on Bittensor, TaoSwap enables secure TAO
               trading and DeFi opportunities. Built for the community, we
