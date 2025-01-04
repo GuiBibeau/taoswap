@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Providers from "./components/provider";
 import { Analytics } from "@vercel/analytics/react";
+import { ContextProvider } from "./components/provider";
+import { ThemeProvider } from "next-themes";
+
+import { headers } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,23 +44,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookies = (await headers()).get("cookie");
+
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.svg" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark:bg-zinc-900 dark:text-zinc-50`}
       >
-        <Analytics />
-        <Providers>
-          <main className="relative max-w-7xl mx-auto">{children}</main>
-        </Providers>
+        <ThemeProvider>
+          <Analytics />
+          <ContextProvider cookies={cookies}>{children}</ContextProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

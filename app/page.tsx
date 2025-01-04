@@ -2,8 +2,8 @@ import { Hero } from "./components/landing/hero";
 
 export default function Home() {
   return (
-    <div className="">
+    <main className="relative max-w-7xl mx-auto">
       <Hero />
-    </div>
+    </main>
   );
 }

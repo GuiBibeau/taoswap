@@ -11,8 +11,6 @@ type AvatarProps = {
   initials?: string;
   alt?: string;
   className?: string;
-  width?: number;
-  height?: number;
 };
 
 export function Avatar({
@@ -21,8 +19,6 @@ export function Avatar({
   initials,
   alt = "",
   className,
-  width = 40,
-  height = 40,
   ...props
 }: AvatarProps & React.ComponentPropsWithoutRef<"span">) {
   return (
@@ -64,11 +60,8 @@ export function Avatar({
           className="size-full"
           src={src}
           alt={alt}
-          width={width}
-          height={height}
-          style={{
-            objectFit: "cover",
-          }}
+          width={40}
+          height={40}
         />
       )}
     </span>

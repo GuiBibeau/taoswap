@@ -1,128 +1,99 @@
 "use client";
 
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { ChevronDown } from "lucide-react";
-import Image from "next/image";
+import { Dialog } from "@/app/components/ui/dialog";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useState } from "react";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
-export const ConnectWalletButton = ({
-  children,
-}: {
-  children?: React.ReactNode;
-}) => {
-  return (
-    <ConnectButton.Custom>
-      {({
-        account,
-        chain,
-        openAccountModal,
-        openChainModal,
-        openConnectModal,
-        authenticationStatus,
-        mounted,
-      }) => {
-        // Note: If your app doesn't use authentication, you
-        // can remove all 'authenticationStatus' checks
-        const ready = mounted && authenticationStatus !== "loading";
-        const connected =
-          ready &&
-          account &&
-          chain &&
-          (!authenticationStatus || authenticationStatus === "authenticated");
+export function ConnectButton() {
+  const [isOpen, setIsOpen] = useState(false);
+  const { connectors, connect } = useConnect();
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
 
-        return (
-          <div
-            {...(!ready && {
-              "aria-hidden": true,
-              style: {
-                opacity: 0,
-                pointerEvents: "none",
-                userSelect: "none",
-              },
-            })}
-          >
-            {(() => {
-              if (!connected) {
-                return (
-                  <>
-                    {children ? (
-                      <button
-                        onClick={openConnectModal}
-                        className="rounded-2xl w-full bg-blue-500 py-5 font-semibold text-blue-100 mt-1 hover:bg-blue-400 ease-in-out duration-200"
-                        type="button"
-                      >
-                        {children}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={openConnectModal}
-                        className="flex items-center gap-1 rounded-full border border-[#404040] bg-gradient-to-b from-[#5B5B5D] to-[#262627] px-4 md:px-10 py-2 text-center text-white hover:opacity-80 duration-150"
-                        type="button"
-                      >
-                        Connect Wallet
-                      </button>
-                    )}
-                  </>
-                );
-              }
+  const handleClose = () => {
+    setIsOpen(false);
+  };
 
-              if (chain.unsupported) {
-                return (
-                  <button
-                    onClick={openChainModal}
-                    type="button"
-                    className="flex items-center gap-1 rounded-full border border-[#404040] bg-gradient-to-b from-[#5B5B5D] to-[#262627] px-10 py-2 text-center text-white hover:opacity-80 duration-150"
-                  >
-                    Wrong network
-                  </button>
-                );
-              }
+  if (isConnected) {
+    return (
+      <>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700"
+        >
+          <span>
+            {address?.slice(0, 6)}...{address?.slice(-4)}
+          </span>
+          <ChevronDownIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+        </button>
 
-              return (
-                <div className="flex flex-col gap-1 md:flex-row">
-                  <button
-                    onClick={openChainModal}
-                    className="flex items-center gap-1 rounded-full border border-[#404040] bg-gradient-to-b from-[#5B5B5D] to-[#262627] px-4 py-2 text-center text-white"
-                    type="button"
-                  >
-                    {chain.hasIcon && (
-                      <div
-                        className={`w-3 h-3 rounded-full bg-[${chain.iconBackground}] overflow-hidden mr-1`}
-                      >
-                        {chain.iconUrl && (
-                          <Image
-                            alt={chain.name ?? "Chain icon"}
-                            src={chain.iconUrl}
-                            width={12}
-                            height={12}
-                          />
-                        )}
-                      </div>
-                    )}
-                    {chain.name}
-                    <ChevronDown />
-                  </button>
+        <Dialog open={isOpen} onClose={handleClose}>
+          <div className="p-4">
+            <div className="mb-4">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                Wallet Connected
+              </h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                {address}
+              </p>
+            </div>
 
-                  <button
-                    onClick={openAccountModal}
-                    type="button"
-                    className="flex items-center gap-1 rounded-full border border-[#404040] bg-gradient-to-b from-[#5B5B5D] to-[#262627] px-4 py-2 text-center text-white"
-                  >
-                    {account.displayName}
-                    {account.displayBalance ? (
-                      <span className="font-semibold">
-                        ({account.displayBalance})
-                      </span>
-                    ) : (
-                      ""
-                    )}
-                    <ChevronDown />
-                  </button>
-                </div>
-              );
-            })()}
+            <button
+              onClick={() => {
+                disconnect();
+                handleClose();
+              }}
+              className="w-full flex items-center justify-center p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700"
+            >
+              Disconnect
+            </button>
           </div>
-        );
-      }}
-    </ConnectButton.Custom>
+        </Dialog>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700"
+      >
+        <span>Connect Wallet</span>
+        <ChevronDownIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+      </button>
+
+      <Dialog open={isOpen} onClose={handleClose}>
+        <div className="p-4">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              Connect Wallet
+            </h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Choose your preferred wallet connection method
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {connectors.map((connector) => (
+              <button
+                key={connector.id}
+                onClick={() => {
+                  connect({ connector });
+                  handleClose();
+                }}
+                className={`w-full flex items-center justify-between p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 
+                  text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700`}
+              >
+                <span className="flex items-center gap-2">
+                  {connector.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </Dialog>
+    </>
   );
-};
+}
