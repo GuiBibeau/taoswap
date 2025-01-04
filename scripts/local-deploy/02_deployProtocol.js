@@ -1,6 +1,6 @@
 const { ContractFactory, utils } = require("ethers");
 const { updateEnvFile } = require("../utils/env");
-const { deployContract } = require("../utils/contracts");
+const { deployContract, saveContractInfo } = require("../utils/contracts");
 const WTAO = require("../../artifacts/contracts/WTAO.sol/WTAO.json");
 
 const artifacts = {
@@ -43,11 +43,16 @@ const linkLibraries = ({ bytecode, linkReferences }, libraries) => {
 
 async function main() {
   const [owner] = await ethers.getSigners();
+  const networkName = (await ethers.provider.getNetwork()).name || "local";
 
-  const wtao = await deployContract(WTAO, owner);
-  const wtaoAddress = wtao.address;
+  const wtaoAddress = process.env.WTAO_ADDRESS;
+  if (!wtaoAddress) {
+    throw new Error("WTAO_ADDRESS not found in environment variables");
+  }
+  console.log("Using WTAO from environment:", wtaoAddress);
 
   const factory = await deployContract(artifacts.UniswapV3Factory, owner);
+  await saveContractInfo("UniswapV3Factory", factory, networkName);
 
   const swapRouter = await deployContract(
     artifacts.SwapRouter,
@@ -55,8 +60,10 @@ async function main() {
     factory.address,
     wtaoAddress
   );
+  await saveContractInfo("SwapRouter", swapRouter, networkName);
 
   const nftDescriptor = await deployContract(artifacts.NFTDescriptor, owner);
+  await saveContractInfo("NFTDescriptor", nftDescriptor, networkName);
 
   const linkedBytecode = linkLibraries(
     {
@@ -70,12 +77,17 @@ async function main() {
     { NFTDescriptor: nftDescriptor.address }
   );
 
-  const nativeCurrencyLabelBytes = utils.formatBytes32String("WETH");
+  const nativeCurrencyLabelBytes = utils.formatBytes32String("WTAO");
   const nonfungibleTokenPositionDescriptor = await new ContractFactory(
     artifacts.NonfungibleTokenPositionDescriptor.abi,
     linkedBytecode,
     owner
   ).deploy(wtaoAddress, nativeCurrencyLabelBytes);
+  await saveContractInfo(
+    "NonfungibleTokenPositionDescriptor",
+    nonfungibleTokenPositionDescriptor,
+    networkName
+  );
 
   const nonfungiblePositionManager = await deployContract(
     artifacts.NonfungiblePositionManager,
@@ -84,9 +96,13 @@ async function main() {
     wtaoAddress,
     nonfungibleTokenPositionDescriptor.address
   );
+  await saveContractInfo(
+    "NonfungiblePositionManager",
+    nonfungiblePositionManager,
+    networkName
+  );
 
   const addresses = {
-    WTAO_ADDRESS: wtaoAddress,
     FACTORY_ADDRESS: factory.address,
     SWAP_ROUTER_ADDRESS: swapRouter.address,
     NFT_DESCRIPTOR_ADDRESS: nftDescriptor.address,
@@ -94,11 +110,26 @@ async function main() {
     POSITION_MANAGER_ADDRESS: nonfungiblePositionManager.address,
   };
 
-  return updateEnvFile(addresses);
+  await updateEnvFile(addresses);
+  await Promise.all([
+    Object.entries(addresses).forEach(([name, address]) => {
+      const contractName = name.replace("_ADDRESS", "");
+      const contractArtifact = artifacts[contractName] || WTAO;
+      saveContractInfo(
+        contractName,
+        {
+          address,
+          abi: contractArtifact.abi,
+          provider: ethers.provider,
+        },
+        networkName
+      );
+    }),
+  ]);
 }
 
 /*
-npx hardhat run --network localhost scripts/01_deployContracts.js
+npx hardhat run --network localhost scripts/local-deploy/02_deployProtocol.js
 */
 
 main()

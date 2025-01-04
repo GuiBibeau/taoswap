@@ -20,7 +20,11 @@ const artifacts = {
 
 const bn = require("bignumber.js");
 const { updateEnvFile } = require("../utils/env");
-const { createContract, encodePriceSqrt } = require("../utils/contracts");
+const {
+  createContract,
+  encodePriceSqrt,
+  saveContractInfo,
+} = require("../utils/contracts");
 bn.config({ EXPONENTIAL_AT: 999999, DECIMAL_PLACES: 40 });
 
 // Create contract instances
@@ -70,6 +74,7 @@ const deployPool = async (contracts, tokenA, tokenB, fee, price) => {
 const main = async () => {
   const [signer] = await ethers.getSigners();
   const contracts = createContracts(signer);
+  const networkName = (await ethers.provider.getNetwork()).name || "local";
 
   // Sort tokens to determine correct price orientation
   const [token0, token1] = sortTokens(ADDRESSES.WTAO, ADDRESSES.USDC);
@@ -77,24 +82,39 @@ const main = async () => {
 
   // Adjust price based on token ordering
   const sqrtPrice = isWTAOToken0
-    ? encodePriceSqrt(500, 1) // If WTAO is token0
-    : encodePriceSqrt(1, 500); // If WTAO is token1
+    ? encodePriceSqrt(500, 1)
+    : encodePriceSqrt(1, 500);
+
+  // Deploy pool and get address
+  const wtaoUsdcPoolAddress = await deployPool(
+    contracts,
+    ADDRESSES.WTAO,
+    ADDRESSES.USDC,
+    3000,
+    sqrtPrice
+  );
+
+  // Save pool contract info
+  await saveContractInfo(
+    "WTAO_USDC_3000",
+    {
+      address: wtaoUsdcPoolAddress,
+      abi: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json")
+        .abi,
+      provider: ethers.provider,
+    },
+    networkName
+  );
 
   const poolAddresses = {
-    WTAO_USDC_3000: await deployPool(
-      contracts,
-      ADDRESSES.WTAO,
-      ADDRESSES.USDC,
-      3000,
-      sqrtPrice
-    ),
+    WTAO_USDC_3000: wtaoUsdcPoolAddress,
   };
 
   return updateEnvFile(poolAddresses);
 };
 
 /*
-  npx hardhat run --network localhost scripts/03_deployPools.js
+npx hardhat run --network localhost scripts/local-deploy/04_deployPools.js
 */
 
 main()

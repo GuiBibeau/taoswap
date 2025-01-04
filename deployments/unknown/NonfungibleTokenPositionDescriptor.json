@@ -1,0 +1,16 @@
+{
+  "name": "NonfungibleTokenPositionDescriptor",
+  "address": "0xd401916327982B915414b4d2a4a9257F98b04Abc",
+  "abi": [
+    "constructor(address _WETH9, bytes32 _nativeCurrencyLabelBytes)",
+    "function WETH9() view returns (address)",
+    "function flipRatio(address token0, address token1, uint256 chainId) view returns (bool)",
+    "function nativeCurrencyLabel() view returns (string)",
+    "function nativeCurrencyLabelBytes() view returns (bytes32)",
+    "function tokenRatioPriority(address token, uint256 chainId) view returns (int256)",
+    "function tokenURI(address positionManager, uint256 tokenId) view returns (string)"
+  ],
+  "deploymentBlock": 6,
+  "deploymentTimestamp": 1736026206,
+  "network": "unknown"
+}

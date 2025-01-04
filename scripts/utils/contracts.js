@@ -1,5 +1,7 @@
 const { Contract, ContractFactory, utils, BigNumber } = require("ethers");
 const bn = require("bignumber.js");
+const fs = require("fs");
+const path = require("path");
 bn.config({ EXPONENTIAL_AT: 999999, DECIMAL_PLACES: 40 });
 
 // Contract creation helpers
@@ -48,6 +50,39 @@ const approveToken = async (tokenContract, signer, spenderAddress, amount) => {
   await tokenContract.connect(signer).approve(spenderAddress, amount);
 };
 
+const saveContractInfo = async (contractName, info, networkName = "local") => {
+  try {
+    // Create the contracts directory if it doesn't exist
+    const contractsDir = path.join(__dirname, "../../deployments", networkName);
+    if (!fs.existsSync(contractsDir)) {
+      fs.mkdirSync(contractsDir, { recursive: true });
+    }
+
+    // Format the contract information
+    const contractInfo = {
+      name: contractName,
+      address: info.address,
+      abi: info.interface ? info.interface.format() : info.abi,
+      deploymentBlock: await info.provider.getBlockNumber(),
+      deploymentTimestamp: Math.floor(Date.now() / 1000),
+      network: networkName,
+    };
+
+    // Save to JSON file
+    const filePath = path.join(contractsDir, `${contractName}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(contractInfo, null, 2));
+
+    console.log(`Contract information saved to ${filePath}`);
+    return contractInfo;
+  } catch (error) {
+    console.error(
+      `Error saving contract information for ${contractName}:`,
+      error
+    );
+    throw error;
+  }
+};
+
 module.exports = {
   createContract,
   deployContract,
@@ -56,4 +91,5 @@ module.exports = {
   getPoolData,
   encodePriceSqrt,
   approveToken,
+  saveContractInfo,
 };

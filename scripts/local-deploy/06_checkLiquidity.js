@@ -23,7 +23,7 @@ const main = async () => {
 };
 
 /*
-  npx hardhat run --network localhost scripts/05_checkLiquidity.js
+npx hardhat run --network localhost scripts/local-deploy/06_checkLiquidity.js
 */
 
 main()

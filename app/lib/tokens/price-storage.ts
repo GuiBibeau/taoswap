@@ -1,39 +1,46 @@
-import { client } from "@/app/lib/redis";
-import { TokenPrice, PriceError, Currency } from "./price-fetcher";
+import { client as redisClient } from "@/app/lib/redis";
+import { docClient } from "@/app/lib/dynamodb";
+import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  TokenPrice,
+  PriceError,
+  Currency,
+  PriceHistoryItem,
+} from "./price-types";
 
 const PRICE_KEY_PREFIX = "token_price";
 const ERROR_KEY_PREFIX = "price_error";
-const PRICE_HISTORY_KEY_PREFIX = "price_history";
+const PRICE_TABLE_NAME = "token_prices";
 
 // Helper to generate Redis keys
 const getPriceKey = (currency: Currency) => `${PRICE_KEY_PREFIX}:${currency}`;
 const getErrorKey = (currency: Currency) => `${ERROR_KEY_PREFIX}:${currency}`;
-const getPriceHistoryKey = (currency: Currency) =>
-  `${PRICE_HISTORY_KEY_PREFIX}:${currency}`;
 
-// Store current price data
+// Store current price data in Redis
 export async function storeTokenPrice(price: TokenPrice): Promise<void> {
   try {
-    await client.set(
+    // Store current price in Redis
+    await redisClient.set(
       getPriceKey(price.currency),
       JSON.stringify(price),
       "EX",
       60 * 5 // Cache for 5 minutes
     );
 
-    // Also store in historical data
-    await client.zadd(
-      getPriceHistoryKey(price.currency),
-      price.timestamp,
-      JSON.stringify(price)
-    );
+    // Store historical data in DynamoDB
+    const historyItem: PriceHistoryItem = {
+      assetId: `TAO_${price.currency.toUpperCase()}`,
+      timestamp: price.timestamp,
+      price: price.price,
+      currency: price.currency,
+      formattedPrice: price.formattedPrice,
+    };
 
-    // Trim history to last 24 hours
-    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    await client.zremrangebyscore(
-      getPriceHistoryKey(price.currency),
-      0,
-      oneDayAgo
+    await docClient.send(
+      new PutCommand({
+        TableName: PRICE_TABLE_NAME,
+        Item: historyItem,
+      })
     );
   } catch (error) {
     console.error("Error storing token price:", error);
@@ -41,17 +48,17 @@ export async function storeTokenPrice(price: TokenPrice): Promise<void> {
   }
 }
 
-// Store error data
+// Store error data in Redis
 export async function storePriceError(
   error: PriceError,
   currency: Currency
 ): Promise<void> {
   try {
-    await client.set(
+    await redisClient.set(
       getErrorKey(currency),
       JSON.stringify(error),
       "EX",
-      60 * 5 // Cache for 5 minutes
+      60 * 5
     );
   } catch (error) {
     console.error("Error storing price error:", error);
@@ -59,12 +66,12 @@ export async function storePriceError(
   }
 }
 
-// Get current price data
+// Get current price data from Redis
 export async function getTokenPrice(
   currency: Currency
 ): Promise<TokenPrice | null> {
   try {
-    const data = await client.get(getPriceKey(currency));
+    const data = await redisClient.get(getPriceKey(currency));
     return data ? JSON.parse(data) : null;
   } catch (error) {
     console.error("Error getting token price:", error);
@@ -72,12 +79,12 @@ export async function getTokenPrice(
   }
 }
 
-// Get latest error
+// Get latest error from Redis
 export async function getPriceError(
   currency: Currency
 ): Promise<PriceError | null> {
   try {
-    const data = await client.get(getErrorKey(currency));
+    const data = await redisClient.get(getErrorKey(currency));
     return data ? JSON.parse(data) : null;
   } catch (error) {
     console.error("Error getting price error:", error);
@@ -85,19 +92,31 @@ export async function getPriceError(
   }
 }
 
-// Get historical price data
+// Get historical price data from DynamoDB
 export async function getPriceHistory(
   currency: Currency,
   start?: number,
   end: number = Date.now()
 ): Promise<TokenPrice[]> {
   try {
-    const data = await client.zrangebyscore(
-      getPriceHistoryKey(currency),
-      start || 0,
-      end
+    const assetId = `TAO_${currency.toUpperCase()}`;
+    const response = await docClient.send(
+      new QueryCommand({
+        TableName: PRICE_TABLE_NAME,
+        KeyConditionExpression:
+          "assetId = :assetId AND #ts BETWEEN :start AND :end",
+        ExpressionAttributeNames: {
+          "#ts": "timestamp",
+        },
+        ExpressionAttributeValues: {
+          ":assetId": assetId,
+          ":start": start || 0,
+          ":end": end,
+        },
+      })
     );
-    return data.map((item) => JSON.parse(item));
+
+    return (response.Items || []) as TokenPrice[];
   } catch (error) {
     console.error("Error getting price history:", error);
     throw new Error("Failed to get price history");
@@ -107,10 +126,7 @@ export async function getPriceHistory(
 // Delete price data
 export async function deleteTokenPrice(currency: Currency): Promise<void> {
   try {
-    await Promise.all([
-      client.del(getPriceKey(currency)),
-      client.del(getPriceHistoryKey(currency)),
-    ]);
+    await redisClient.del(getPriceKey(currency));
   } catch (error) {
     console.error("Error deleting token price:", error);
     throw new Error("Failed to delete token price");
