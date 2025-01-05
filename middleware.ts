@@ -20,5 +20,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/swap", "/tokens", "/pools", "/tokens/:path*"],
+  matcher: ["/swap", "/tokens", "/pools", "/tokens/:path*", "/pools/:path*"],
 };
