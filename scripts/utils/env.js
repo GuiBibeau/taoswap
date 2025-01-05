@@ -32,15 +32,13 @@ const writeEnvFile = async (filePath, data) => {
   console.log("Addresses recorded to .env.local");
 };
 
-const updateEnvFile = async (newAddresses) => {
-  const ENV_PATH = ".env.local";
-
+const updateEnvFile = async (newAddresses, envPath = ".env.local") => {
   try {
-    const existingContent = await readEnvFile(ENV_PATH);
+    const existingContent = await readEnvFile(envPath);
     const existingEnv = parseEnvContent(existingContent);
     const mergedData = mergeEnvData(existingEnv, newAddresses);
     const formattedData = formatEnvData(mergedData);
-    await writeEnvFile(ENV_PATH, formattedData);
+    await writeEnvFile(envPath, formattedData);
   } catch (error) {
     console.error("Error logging addresses:", error);
     throw error;

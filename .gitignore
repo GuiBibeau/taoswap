@@ -42,3 +42,7 @@ next-env.d.ts
 
 # artifacts
 artifacts/
+cache/
+
+# / mock data
+/local-data/*.json

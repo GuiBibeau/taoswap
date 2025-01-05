@@ -11,6 +11,8 @@
     "deploy-dex-local": "node scripts/local-deploy/deployAll.js"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.721.0",
+    "@aws-sdk/lib-dynamodb": "^3.721.0",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-dialog": "^1.1.4",
