@@ -87,9 +87,7 @@ export function ConnectButton() {
                   text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-700`}
               >
                 <span className="flex items-center gap-2">
-                  {connector.name === "Injected"
-                    ? "Browser Wallet"
-                    : connector.name}
+                  {connector.name}
                 </span>
               </button>
             ))}

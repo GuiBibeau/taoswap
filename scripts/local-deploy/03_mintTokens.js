@@ -41,6 +41,7 @@ async function main() {
 
 /*
 npx hardhat run --network localhost scripts/local-deploy/03_mintTokens.js
+npx hardhat run --network bittensorTestnet scripts/local-deploy/03_mintTokens.js
 */
 
 main()

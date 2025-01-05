@@ -1,6 +1,6 @@
 {
   "name": "UniswapV3Factory",
-  "address": "0x8072592C2c3925431ADAfA4735Fdd7Ce3851687c",
+  "address": "0x040776DE994bAB927D308BC7BeffE73cc00d6416",
   "abi": [
     "constructor()",
     "event FeeAmountEnabled(uint24 indexed fee, int24 indexed tickSpacing)",
@@ -14,7 +14,7 @@
     "function parameters() view returns (address factory, address token0, address token1, uint24 fee, int24 tickSpacing)",
     "function setOwner(address _owner)"
   ],
-  "deploymentBlock": 3,
-  "deploymentTimestamp": 1736026206,
+  "deploymentBlock": 3604976,
+  "deploymentTimestamp": 1736039237,
   "network": "unknown"
 }

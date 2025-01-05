@@ -1,0 +1,16 @@
+{
+  "networkId": 945,
+  "networkType": "testnet",
+  "contracts": {
+    "factory": "0x040776DE994bAB927D308BC7BeffE73cc00d6416",
+    "swapRouter": "0x3a98B873F8D3e13c1A0E747E5c69aE452dC64282",
+    "nftDescriptor": "0x05BD39a729ED6356135c425D1F275241CAe87Ac5",
+    "positionDescriptor": "0x4b7130DbFCC9280f48FFCeF9b12889EDA8AE2723",
+    "positionManager": "0xdF1b99ae4C2aa0ad7CEEFc948CE649D88Fd90d21"
+  },
+  "tokens": {
+    "WTAO": "0x6610A4b4b9dDda8655E4Ba38501EB7264d13E98E",
+    "USDC": "0x1847aB61235B6eC385c13E1354B1a387Eccfd6c9"
+  },
+  "deploymentTimestamp": 1736039239
+}

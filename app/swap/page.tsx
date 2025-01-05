@@ -3,8 +3,20 @@ import { ConnectButton } from "../components/connect-button";
 import { Suspense } from "react";
 import { PriceTracker } from "../components/price-tracker";
 import { Logo } from "../components/ui/logo";
+import {
+  getPoolDataFromChain,
+  parsePoolData,
+} from "../lib/pools/pool-from-chain";
+import { Address } from "viem";
 
-export default function Swap() {
+export default async function Swap() {
+  const poolData = await getPoolDataFromChain(
+    process.env.WTAO_USDC_3000 as Address
+  );
+
+  const parsedPoolData = parsePoolData(poolData);
+
+  console.log(parsedPoolData);
   return (
     <>
       <div className="w-full border-b border-gray-200/5 dark:border-gray-200/[0.03]">

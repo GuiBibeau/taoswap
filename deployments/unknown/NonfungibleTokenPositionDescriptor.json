@@ -1,6 +1,6 @@
 {
   "name": "NonfungibleTokenPositionDescriptor",
-  "address": "0xd401916327982B915414b4d2a4a9257F98b04Abc",
+  "address": "0x4b7130DbFCC9280f48FFCeF9b12889EDA8AE2723",
   "abi": [
     "constructor(address _WETH9, bytes32 _nativeCurrencyLabelBytes)",
     "function WETH9() view returns (address)",
@@ -10,7 +10,7 @@
     "function tokenRatioPriority(address token, uint256 chainId) view returns (int256)",
     "function tokenURI(address positionManager, uint256 tokenId) view returns (string)"
   ],
-  "deploymentBlock": 6,
-  "deploymentTimestamp": 1736026206,
+  "deploymentBlock": 3604976,
+  "deploymentTimestamp": 1736039238,
   "network": "unknown"
 }

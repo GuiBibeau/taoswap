@@ -115,6 +115,7 @@ const main = async () => {
 
 /*
 npx hardhat run --network localhost scripts/local-deploy/04_deployPools.js
+npx hardhat run --network bittensorTestnet scripts/local-deploy/04_deployPools.js
 */
 
 main()

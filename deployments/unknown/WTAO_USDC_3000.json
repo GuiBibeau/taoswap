@@ -1,6 +1,6 @@
 {
   "name": "WTAO_USDC_3000",
-  "address": "0x035A3E33F525005a3478a918c129Ba127FA163D9",
+  "address": "0x540479469Ae87d30eB67caaA433beb0c8Dacd2De",
   "abi": [
     {
       "inputs": [],
@@ -989,7 +989,7 @@
       "type": "function"
     }
   ],
-  "deploymentBlock": 10,
-  "deploymentTimestamp": 1736026212,
+  "deploymentBlock": 3605077,
+  "deploymentTimestamp": 1736040452,
   "network": "unknown"
 }

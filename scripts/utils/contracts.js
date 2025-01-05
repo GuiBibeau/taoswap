@@ -50,6 +50,10 @@ const approveToken = async (tokenContract, signer, spenderAddress, amount) => {
   await tokenContract.connect(signer).approve(spenderAddress, amount);
 };
 
+const revokeApproval = async (tokenContract, signer, spenderAddress) => {
+  await tokenContract.connect(signer).approve(spenderAddress, 0);
+};
+
 const saveContractInfo = async (contractName, info, networkName = "local") => {
   try {
     // Create the contracts directory if it doesn't exist
@@ -91,5 +95,6 @@ module.exports = {
   getPoolData,
   encodePriceSqrt,
   approveToken,
+  revokeApproval,
   saveContractInfo,
 };

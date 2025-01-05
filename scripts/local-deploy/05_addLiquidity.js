@@ -7,12 +7,14 @@ const {
   createContract,
   approveToken,
   saveContractInfo,
+  revokeApproval,
 } = require("../utils/contracts");
 
 // Import necessary artifacts
 const artifacts = {
   NonfungiblePositionManager: require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json"),
   ERC20: require("@openzeppelin/contracts/build/contracts/ERC20.json"),
+  UniswapV3Factory: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json"),
 };
 
 // Get addresses from environment
@@ -35,8 +37,13 @@ const addLiquidity = async (signer) => {
   const usdc = createContract(ADDRESSES.USDC, artifacts.ERC20.abi, signer);
 
   // Amount to add as liquidity
-  const wtaoAmount = ethers.utils.parseEther("1");
-  const usdcAmount = ethers.utils.parseEther("500");
+  const wtaoAmount = ethers.utils.parseEther("0.1");
+  const usdcAmount = ethers.utils.parseEther("50");
+
+  // Revoke approval
+  console.log("Revoking approval...");
+  await revokeApproval(wtao, signer, ADDRESSES.POSITION_MANAGER);
+  await revokeApproval(usdc, signer, ADDRESSES.POSITION_MANAGER);
 
   // Approve tokens
   console.log("Approving tokens...");
@@ -54,20 +61,30 @@ const addLiquidity = async (signer) => {
       ? [wtaoAmount, usdcAmount]
       : [usdcAmount, wtaoAmount];
 
-  // Calculate price range
-  const currentPrice = 500; // WTAO/USDC price
-  const priceRange = 0.3; // 30% price range
-  const lowerPrice = currentPrice * (1 - priceRange);
-  const upperPrice = currentPrice * (1 + priceRange);
+  // Get the pool contract to check current state
+  const factory = createContract(
+    process.env.FACTORY_ADDRESS,
+    artifacts.UniswapV3Factory.abi,
+    signer
+  );
+  const poolAddress = await factory.getPool(token0, token1, 3000);
+  const poolContract = new ethers.Contract(
+    poolAddress,
+    require("@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json").abi,
+    signer
+  );
 
-  // Convert prices to ticks
-  const minTick = Math.floor(Math.log(lowerPrice) / Math.log(1.0001));
-  const maxTick = Math.ceil(Math.log(upperPrice) / Math.log(1.0001));
+  // Get current tick from pool
+  const { tick } = await poolContract.slot0();
+  console.log("Current pool tick:", tick.toString());
 
-  // Round to nearest tick spacing
-  const tickSpacing = 60; // 0.3% fee tier
-  const nearestLowerTick = Math.ceil(minTick / tickSpacing) * tickSpacing;
-  const nearestUpperTick = Math.floor(maxTick / tickSpacing) * tickSpacing;
+  // Calculate tick range around current tick
+  const tickSpacing = 60;
+  const tickRange = 2000; // Wider range to ensure liquidity
+  const nearestLowerTick =
+    Math.ceil((tick - tickRange) / tickSpacing) * tickSpacing;
+  const nearestUpperTick =
+    Math.floor((tick + tickRange) / tickSpacing) * tickSpacing;
 
   console.log("Adding liquidity with parameters:");
   console.log("Token0:", token0);
@@ -77,19 +94,22 @@ const addLiquidity = async (signer) => {
   console.log("Tick Range:", nearestLowerTick, "-", nearestUpperTick);
 
   // Mint new position
-  const tx = await positionManager.mint({
-    token0,
-    token1,
-    fee: 3000, // 0.3%
-    tickLower: nearestLowerTick,
-    tickUpper: nearestUpperTick,
-    amount0Desired: amount0,
-    amount1Desired: amount1,
-    amount0Min: 0,
-    amount1Min: 0,
-    recipient: signer.address,
-    deadline: Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from now
-  });
+  const tx = await positionManager.mint(
+    {
+      token0,
+      token1,
+      fee: 3000,
+      tickLower: nearestLowerTick,
+      tickUpper: nearestUpperTick,
+      amount0Desired: amount0,
+      amount1Desired: amount1,
+      amount0Min: 0,
+      amount1Min: 0,
+      recipient: signer.address,
+      deadline: Math.floor(Date.now() / 1000) + 60 * 20,
+    },
+    { gasLimit: 5000000 }
+  );
 
   const receipt = await tx.wait();
   const event = receipt.events.find(
@@ -108,22 +128,11 @@ async function main() {
   console.log("Adding liquidity with address:", signer.address);
 
   const tokenId = await addLiquidity(signer);
-
-  // Save position info
-  const networkName = (await ethers.provider.getNetwork()).name || "local";
-  await saveContractInfo(
-    `LP_Position_${tokenId}`,
-    {
-      tokenId: tokenId.toString(),
-      owner: signer.address,
-      provider: ethers.provider,
-    },
-    networkName
-  );
 }
 
 /*
 npx hardhat run --network localhost scripts/local-deploy/05_addLiquidity.js
+npx hardhat run --network bittensorTestnet scripts/local-deploy/05_addLiquidity.js
 */
 
 main()

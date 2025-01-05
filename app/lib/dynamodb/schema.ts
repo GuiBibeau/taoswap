@@ -85,3 +85,55 @@ export async function createTokenTable() {
     throw error;
   }
 }
+
+export async function createPoolTable() {
+  if (await tableExists("dex_pools")) {
+    console.log("Pool table already exists");
+    return;
+  }
+
+  const command = new CreateTableCommand({
+    TableName: "dex_pools",
+    KeySchema: [
+      { AttributeName: "networkId", KeyType: "HASH" },
+      { AttributeName: "address", KeyType: "RANGE" },
+    ],
+    AttributeDefinitions: [
+      { AttributeName: "networkId", AttributeType: "N" },
+      { AttributeName: "address", AttributeType: "S" },
+      { AttributeName: "token0Address", AttributeType: "S" },
+      { AttributeName: "token1Address", AttributeType: "S" },
+    ],
+    GlobalSecondaryIndexes: [
+      {
+        IndexName: "TokenPoolsIndex",
+        KeySchema: [
+          { AttributeName: "networkId", KeyType: "HASH" },
+          { AttributeName: "token0Address", KeyType: "RANGE" },
+        ],
+        Projection: {
+          ProjectionType: "ALL",
+        },
+      },
+      {
+        IndexName: "Token1PoolsIndex",
+        KeySchema: [
+          { AttributeName: "networkId", KeyType: "HASH" },
+          { AttributeName: "token1Address", KeyType: "RANGE" },
+        ],
+        Projection: {
+          ProjectionType: "ALL",
+        },
+      },
+    ],
+    BillingMode: "PAY_PER_REQUEST",
+  });
+
+  try {
+    await client.send(command);
+    console.log("Pool table created successfully");
+  } catch (error) {
+    console.error("Error creating pool table:", error);
+    throw error;
+  }
+}

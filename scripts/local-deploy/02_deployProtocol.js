@@ -2,6 +2,7 @@ const { ContractFactory, utils } = require("ethers");
 const { updateEnvFile } = require("../utils/env");
 const { deployContract, saveContractInfo } = require("../utils/contracts");
 const WTAO = require("../../artifacts/contracts/WTAO.sol/WTAO.json");
+const { saveProtocolInfo } = require("../utils/saveProtocolInfo");
 
 const artifacts = {
   UniswapV3Factory: require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json"),
@@ -126,10 +127,15 @@ async function main() {
       );
     }),
   ]);
+
+  const networkId = (await ethers.provider.getNetwork()).chainId;
+
+  await saveProtocolInfo(networkId, addresses);
 }
 
 /*
 npx hardhat run --network localhost scripts/local-deploy/02_deployProtocol.js
+npx hardhat run --network bittensorTestnet scripts/local-deploy/02_deployProtocol.js
 */
 
 main()
