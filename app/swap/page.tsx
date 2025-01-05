@@ -3,11 +3,9 @@ import { ConnectButton } from "../components/connect-button";
 import { Suspense } from "react";
 import { PriceTracker } from "../components/price-tracker";
 import { Logo } from "../components/ui/logo";
-import {
-  getPoolDataFromChain,
-  parsePoolData,
-} from "../lib/pools/pool-from-chain";
+import { getPoolDataFromChain } from "../lib/pools/pool-from-chain";
 import { Address } from "viem";
+import { parsePoolData } from "../lib/utils/pool-utils";
 
 export default async function Swap() {
   const poolData = await getPoolDataFromChain(

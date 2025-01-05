@@ -6,6 +6,5 @@
  *                    false if running in production
  */
 export const isLowerEnvironment = (): boolean => {
-  console.log("VERCEL_ENV", process.env.VERCEL_ENV);
   return process.env.VERCEL_ENV !== "production";
 };

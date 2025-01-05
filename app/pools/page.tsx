@@ -1,9 +1,6 @@
 import { Address } from "viem";
 import { bittensorTestnet } from "@/app/lib/wagmi";
-import {
-  getPoolDataFromChain,
-  parsePoolData,
-} from "@/app/lib/pools/pool-from-chain";
+import { getPoolDataFromChain } from "@/app/lib/pools/pool-from-chain";
 import { getTokenByAddress } from "@/app/lib/tokens/token-storage";
 import { Card } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
@@ -12,6 +9,7 @@ import {
   DescriptionDetails,
   DescriptionTerm,
 } from "@/app/components/ui/description-list";
+import { parsePoolData } from "@/app/lib/utils/pool-utils";
 
 async function getPoolInfo(poolAddress: Address) {
   try {
