@@ -1,6 +1,6 @@
 import { Address, http, createPublicClient } from "viem";
 import UniswapV3PoolArtifact from "@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json";
-import { getPriceFromSqrtPriceX96, getPriceFromTick } from "../utils";
+
 import { bittensorTestnet } from "../wagmi";
 
 // Use the abi from the artifact
@@ -78,21 +78,5 @@ export async function getPoolDataFromChain(
     token1,
     observationIndex: Number(slot0[2]),
     observationCardinality: Number(slot0[3]),
-  };
-}
-
-// Optional: Keep your existing parsing function to transform the raw data
-export function parsePoolData(poolData: PoolChainData) {
-  const priceFromSqrt = getPriceFromSqrtPriceX96(poolData.sqrtPriceX96);
-  const priceFromTick = getPriceFromTick(poolData.currentTick);
-
-  return {
-    feeBps: Number(poolData.fee),
-    priceFromSqrt,
-    priceFromTick,
-    liquidity: poolData.liquidity,
-    tickSpacing: poolData.tickSpacing,
-    token0: poolData.token0,
-    token1: poolData.token1,
   };
 }

@@ -1,9 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { PoolChainData } from "../pools/pool-from-chain";
 
 /**
  * Converts the Uniswap V3 sqrtPriceX96 encoding into a decimal price (token1 per token0).
@@ -66,4 +61,20 @@ export function parseLiquidity(
     return (rawNumber / 1e3).toFixed(2) + "k";
   }
   return rawNumber.toString();
+}
+
+// Optional: Keep your existing parsing function to transform the raw data
+export function parsePoolData(poolData: PoolChainData) {
+  const priceFromSqrt = getPriceFromSqrtPriceX96(poolData.sqrtPriceX96);
+  const priceFromTick = getPriceFromTick(poolData.currentTick);
+
+  return {
+    feeBps: Number(poolData.fee),
+    priceFromSqrt,
+    priceFromTick,
+    liquidity: poolData.liquidity,
+    tickSpacing: poolData.tickSpacing,
+    token0: poolData.token0,
+    token1: poolData.token1,
+  };
 }
