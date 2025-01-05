@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
-import { ContextProvider } from "./components/provider";
 import { ThemeProvider } from "next-themes";
-
-import { headers } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,8 +46,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookies = (await headers()).get("cookie");
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -61,7 +56,7 @@ export default async function RootLayout({
       >
         <ThemeProvider>
           <Analytics />
-          <ContextProvider cookies={cookies}>{children}</ContextProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>
