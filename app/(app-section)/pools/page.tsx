@@ -22,6 +22,8 @@ async function getPoolInfo(poolAddress: Address) {
       getTokenByAddress(bittensorTestnet.id, parsedPool.token1),
     ]);
 
+    console.log(token0Info, token1Info);
+
     return {
       ...parsedPool,
       token0Info,

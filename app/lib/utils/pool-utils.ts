@@ -72,6 +72,7 @@ export function parsePoolData(poolData: PoolChainData) {
     feeBps: Number(poolData.fee),
     priceFromSqrt,
     priceFromTick,
+    sqrtPriceX96: poolData.sqrtPriceX96,
     liquidity: poolData.liquidity,
     tickSpacing: poolData.tickSpacing,
     token0: poolData.token0,

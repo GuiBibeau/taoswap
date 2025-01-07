@@ -2,10 +2,31 @@ require("dotenv").config({
   path: ".env.local",
 });
 
+// Hard-coded token configurations
+const TOKENS = {
+  WTAO: {
+    name: "Wrapped TAO",
+    address: "0x6C2f20dae68c1035bCf1993027a03b685384DC7E",
+    decimals: 18,
+  },
+  USDC: {
+    name: "USD Coin",
+    address: "0xFDD1867EBd17B25F5fCBf5Ec49C06Db8F912e96D",
+    decimals: 6,
+  },
+};
+
+const POOLS = {
+  WTAO_USDC_3000: {
+    tokens: [TOKENS.WTAO, TOKENS.USDC],
+    fee: 3000,
+    baseToken: "USDC", // The token we're pricing against
+    price: 500, // 1 WTAO = 500 USDC
+  },
+};
+
 // Convert environment variables to constants
 const ADDRESSES = {
-  USDC: process.env.USDC_ADDRESS,
-  WTAO: process.env.WTAO_ADDRESS,
   FACTORY: process.env.FACTORY_ADDRESS,
   SWAP_ROUTER: process.env.SWAP_ROUTER_ADDRESS,
   NFT_DESCRIPTOR: process.env.NFT_DESCRIPTOR_ADDRESS,
@@ -70,27 +91,41 @@ const deployPool = async (contracts, tokenA, tokenB, fee, price) => {
   return poolAddress;
 };
 
+// Helper to calculate the correct sqrt price based on token order and decimals
+const calculateSqrtPrice = (pool, token0, token1) => {
+  const [tokenA, tokenB] = pool.tokens;
+  const baseTokenIsToken0 =
+    token0.toLowerCase() === TOKENS[pool.baseToken].address.toLowerCase();
+
+  // Adjust for decimal differences
+  const decimalDiff = tokenA.decimals - tokenB.decimals;
+  const adjustedPrice = pool.price * Math.pow(10, decimalDiff);
+
+  return baseTokenIsToken0
+    ? encodePriceSqrt(1, adjustedPrice)
+    : encodePriceSqrt(adjustedPrice, 1);
+};
+
 // Main execution function
 const main = async () => {
   const [signer] = await ethers.getSigners();
   const contracts = createContracts(signer);
   const networkName = (await ethers.provider.getNetwork()).name || "local";
 
-  // Sort tokens to determine correct price orientation
-  const [token0, token1] = sortTokens(ADDRESSES.WTAO, ADDRESSES.USDC);
-  const isWTAOToken0 = token0.toLowerCase() === ADDRESSES.WTAO.toLowerCase();
+  const pool = POOLS.WTAO_USDC_3000;
+  const [token0, token1] = sortTokens(
+    pool.tokens[0].address,
+    pool.tokens[1].address
+  );
 
-  // Adjust price based on token ordering
-  const sqrtPrice = isWTAOToken0
-    ? encodePriceSqrt(500, 1)
-    : encodePriceSqrt(1, 500);
+  const sqrtPrice = calculateSqrtPrice(pool, token0, token1);
 
   // Deploy pool and get address
   const wtaoUsdcPoolAddress = await deployPool(
     contracts,
-    ADDRESSES.WTAO,
-    ADDRESSES.USDC,
-    3000,
+    pool.tokens[0].address,
+    pool.tokens[1].address,
+    pool.fee,
     sqrtPrice
   );
 

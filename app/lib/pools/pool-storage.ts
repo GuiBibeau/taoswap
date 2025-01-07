@@ -90,7 +90,6 @@ export async function getPoolsByToken(
     const response = await docClient.send(
       new QueryCommand({
         TableName: TABLE_NAME,
-        IndexName: "TokenPoolsIndex",
         KeyConditionExpression: "networkId = :networkId",
         FilterExpression:
           "token0Address = :tokenAddress OR token1Address = :tokenAddress",
@@ -126,5 +125,46 @@ export async function deletePool(
   } catch (error) {
     console.error("Error deleting pool:", error);
     throw new Error("Failed to delete pool");
+  }
+}
+
+export async function getPoolByTokenSymbols(
+  networkId: number,
+  token0Symbol: string,
+  token1Symbol: string
+): Promise<PoolInfo | null> {
+  try {
+    // Normalize symbols (handle TAO -> WTAO conversion)
+    const normalizedToken0 =
+      token0Symbol.toLowerCase() === "tao"
+        ? "WTAO"
+        : token0Symbol.toUpperCase();
+    const normalizedToken1 =
+      token1Symbol.toLowerCase() === "tao"
+        ? "WTAO"
+        : token1Symbol.toUpperCase();
+
+    const response = await docClient.send(
+      new QueryCommand({
+        TableName: TABLE_NAME,
+        KeyConditionExpression: "networkId = :networkId",
+        FilterExpression: `
+          (token0Symbol = :symbol0 AND token1Symbol = :symbol1) OR 
+          (token0Symbol = :symbol1 AND token1Symbol = :symbol0)
+        `,
+        ExpressionAttributeValues: {
+          ":networkId": networkId,
+          ":symbol0": normalizedToken0,
+          ":symbol1": normalizedToken1,
+        },
+      })
+    );
+
+    // Since we're looking for a specific pair, we should only get one result
+    const pools = response.Items as PoolInfo[];
+    return pools[0] || null;
+  } catch (error) {
+    console.error("Error getting pool by token symbols:", error);
+    throw new Error("Failed to get pool by token symbols");
   }
 }
